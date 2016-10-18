@@ -1,0 +1,23 @@
+{
+  "name": "svg-progress-chart",
+  "version": "1.0.0",
+  "description": "\"SVG Progress Chart\"",
+  "main": "webpack.config.js",
+  "scripts": {
+    "start": "tsc app.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oriziv/svg-progress-chart.git"
+  },
+  "author": "Ori Ziv",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oriziv/svg-progress-chart/issues"
+  },
+  "homepage": "https://github.com/oriziv/svg-progress-chart#readme",
+  "devDependencies": {
+    "typescript": "^2.0.0"
+  }
+}
