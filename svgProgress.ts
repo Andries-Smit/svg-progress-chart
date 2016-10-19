@@ -8,14 +8,14 @@ import { Rect, Tooltip } from './models';
 // @TODO import function from Utils
 let requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
+        window['webkitRequestAnimationFrame'] ||
         window['mozRequestAnimationFrame'] ||
         function (callback) {
             window.setTimeout(callback, 1000 / 60);
         };
 })();
 
-export class SVGChart {
+export class SVGProgressChart {
     id: string;
     rootElement: HTMLElement;
     components: ComponentTree;
@@ -26,7 +26,7 @@ export class SVGChart {
         time: 0
     };
 
-    constructor(id, options: ChartOptions | undefined) {
+    constructor(id, options: ChartOptions) {
         this.id = id;
         this.rootElement = document.getElementById(id);
         if (!id || !this.rootElement) {
@@ -56,6 +56,7 @@ export class SVGChart {
 
 
     private setBuffer(time: number) {
+        time = Math.min(time, this.options.time);
         let that = this;
         let value;
         if (!time) {
@@ -68,6 +69,7 @@ export class SVGChart {
     }
 
     public setProgress(time: number) {
+        time = Math.min(time, this.options.time);
         let that = this;
         let value;
         if (!time) {
@@ -79,23 +81,39 @@ export class SVGChart {
         });
 
     }
+
+    public setPreBuffer(time:number) {
+        time = Math.min(time, this.options.time);
+        let per = time / this.options.time;
+        let pixels = per * this.options.width - this.components.progressBar.tooltip.width / 2;
+        pixels = Math.max(Math.min(pixels, this.options.width - this.components.progressBar.tooltip.width), 0);
+
+        this.components.progressBar.tooltip.show();
+        this.components.progressBar.buffer.show();
+        this.setBuffer(time);
+        this.components.progressBar.tooltip.moveTo(pixels, time);
+
+    }
+
     private init() {
         let instance = this;
         // Create progress bar
         // 1. Create the bar element
-        let bar = new Rect(10, 100, 0, 50, "#ecf0f1");
+        let bar = new Rect(10, 100, 0, 50);
+        bar.addClass('bar');
         this.rootElement.appendChild(bar._el);
         this.components.progressBar.bar = bar;
 
         // 2. Create the progress element
-        let progress = new Rect(10, 1, 0, 50, "#2c3e50");
+        let progress = new Rect(10, 1, 0, 50);
+        progress.addClass('progress');
         progress.moveTo(0);
 
         // 3. Create the dragging overlay progress
-        let bufferProgress = new Rect(10, 1, 0, 50, "rgba(0,0,0,0.1)");
+        let bufferProgress = new Rect(10, 1, 0, 50);
         this.rootElement.appendChild(bufferProgress._el);
         this.components.progressBar.buffer = bufferProgress;
-        bufferProgress._el.classList.add('buffer');
+        bufferProgress.addClass('buffer');
         bufferProgress.moveTo(0);
 
         this.rootElement.appendChild(progress._el);
@@ -106,8 +124,9 @@ export class SVGChart {
         if (this.options.data) {
             this.options.data.forEach((event, i) => {
                 event.x = i ? instance.options.data[i - 1].x + instance.options.data[i - 1].width : 0;
-                let newEvent = new Rect(20, event.width, event.x, 45);
-                newEvent._el.classList.add(event.type);
+                let newEvent = new Rect(20, event.width, event.x, 45, Colors[event.type]);
+                newEvent.type = event.type;
+                newEvent.addClass(event.type);
                 instance.components.events.push(newEvent);
                 instance.rootElement.appendChild(newEvent._el);
             });
@@ -115,12 +134,12 @@ export class SVGChart {
 
         // 5. Create overlay on top of everything for catching events        
         let overlay = new Rect(40, 100, 0, 30, "rgba(255,255,255,0)");
-        overlay._el.classList.add("overlay");
+        overlay.addClass("overlay");
         this.components.progressBar.overlay = overlay;
         this.rootElement.appendChild(overlay._el);
 
         // 6. Create the tooltip
-        let tooltip = new Tooltip(30, 90, 0, 0, "00:00:00", "#DDDDDD");
+        let tooltip = new Tooltip(30, 90, 0, 0, "00:00:00");
         this.components.progressBar.tooltip = tooltip;
         this.rootElement.appendChild(tooltip._el);
 
@@ -132,25 +151,41 @@ export class SVGChart {
             });
         });
         
-        overlay._el.addEventListener('mouseleave', function () {
-            tooltip.hide();
-            bufferProgress.hide();
+        overlay._el.addEventListener('mouseleave', function (e:MouseEvent) {
+            requestAnimFrame(function(){
+                tooltip.hide();
+                bufferProgress.hide();
+            });
+           
         });
 
+        let timer:number;
         overlay._el.addEventListener('mousemove', function (e: MouseEvent) {
             let percent = (e.offsetX / instance.options.width * 100);
             let pixels = e.offsetX / instance.options.width * instance.options.width - tooltip.width / 2;
             let time = e.offsetX / instance.options.width * instance.options.time;
             pixels = Math.max(Math.min(pixels, instance.options.width - tooltip.width), 0);
+            
+            clearTimeout(timer);
 
-            function buffer() {
-                tooltip.show();
-                bufferProgress.show();
-                bufferProgress.moveTo(percent);
-                tooltip.moveTo(pixels, time);
-            }
+            timer = setTimeout(function () {
+            instance.components.events.forEach(event => {
+                tooltip.removeClass('positive');
+                tooltip.removeClass('negative');
+                if(e.offsetX >= event.x*instance.options.width/100 && e.offsetX < (event.x + event.width)/100*instance.options.width) {
+                    if(event.color !== Colors.neutral){
+                        requestAnimFrame(function(){
+                            tooltip.addClass(event.type);
+                        });
+                    } 
+                }
+            });
+            }, 10);
 
-            requestAnimFrame(buffer);
+
+            requestAnimFrame(function(){
+                instance.setPreBuffer(time);
+            });
         });
     }
 }

@@ -1,3 +1,5 @@
+import {TrimSpacesRegEx} from './interfaces';
+
 // Models 
 export const SVGSchemaURI =  "http://www.w3.org/2000/svg";
 export interface Moveable {
@@ -25,11 +27,29 @@ export abstract class Shape {
     abstract createElement<T>():T;
     abstract update():void;
 
+    addClass(cls:string) {
+        if ( 'classList' in this._el ) {
+            this._el.classList.add(cls);
+        } else {
+            this._el.className.baseVal = this._el.className.baseVal + ' ' + cls;
+        }
+    }
+    removeClass(cls:string){
+        if ( 'classList' in this._el ) {
+            this._el.classList.remove(cls);
+        } else {
+            this._el.className.baseVal = this._el.className.baseVal.replace( this.classReg( cls ), ' ' );
+        }
+    }
+
+    private classReg( className ) {
+        return new RegExp("(^|\\s+)" + className + "(\\s+|$)");
+    }
 }
 
 export class Rect extends Shape implements Moveable{
     value:number;
-
+    type?:string;
     constructor (h:number, w:number, x:number, y:number, color?:string) {
         super(h,w,x,y,color);
         this._el = this.createElement();
@@ -37,7 +57,7 @@ export class Rect extends Shape implements Moveable{
     }
 
     createElement ():SVGRectElement {
-        return document.createElementNS(SVGSchemaURI,'rect');
+        return <SVGRectElement> document.createElementNS(SVGSchemaURI,'rect');
     }
 
     update () {
@@ -68,10 +88,10 @@ export class Rect extends Shape implements Moveable{
     }
 
     show(){
-        this._el.classList.add("show");
+        this.addClass('show');
     }
     hide(){
-        this._el.classList.remove("show");
+        this.removeClass('hide');
     }
 }
 
@@ -81,7 +101,7 @@ export class Tooltip extends Shape implements Moveable{
         text:SVGTextElement
     }
     
-    constructor (h:number, w:number, x:number, y:number, text:string, color:string, css?:any) {
+    constructor (h:number, w:number, x:number, y:number, text:string, color?:string, css?:any) {
         super(h,w,x,y,color);
         this.text = text || "00:00:00";
         this.components = {
@@ -92,22 +112,25 @@ export class Tooltip extends Shape implements Moveable{
     }
 
     createElement():SVGGElement {
-        let path:SVGPathElement = document.createElementNS(SVGSchemaURI, "path");
-        path.setAttribute("d", `M${this.x} ${this.y} 
-                                L${this.width + this.x} ${this.y} 
-                                L${this.width + this.x} ${this.height + this.y} 
-                                L${this.x + this.width / 2 + 7} ${this.height + this.y} 
-                                L${this.x + this.width / 2} ${this.height + this.y + 7} 
-                                L${this.x + this.width / 2 - 7 } ${this.height + this.y} 
-                                L${this.x} ${this.height + this.y}`);
-        let text:SVGTextElement = document.createElementNS(SVGSchemaURI, "text");
+        let path:SVGPathElement = <SVGPathElement> document.createElementNS(SVGSchemaURI, "path");
+        path.setAttribute("d", `M${this.x} ${this.y}
+                                L${this.width + this.x} ${this.y}
+                                L${this.width + this.x} ${this.height + this.y}
+                                L${this.x + this.width / 2 + 7} ${this.height + this.y}
+                                L${this.x + this.width / 2} ${this.height + this.y + 7}
+                                L${this.x + this.width / 2 - 7 } ${this.height + this.y}
+                                L${this.x} ${this.height + this.y}`.replace(TrimSpacesRegEx, ' '));
+        let text:SVGTextElement = <SVGTextElement> document.createElementNS(SVGSchemaURI, "text");
         text.textContent = this.text;
         text.setAttribute("x", `${this.x + this.width/2 - 30}`);
         text.setAttribute("y", `${this.y + this.height/2 + 5 }`);
         text.setAttribute("fill","rgba(0,0,0,.6)");
         this.components.text = text;
-        let tooltip:SVGGElement = document.createElementNS(SVGSchemaURI, "g");
-        tooltip.setAttribute("fill", `${this.color}`);
+        let tooltip:SVGGElement = <SVGGElement> document.createElementNS(SVGSchemaURI, "g");
+        if(this.color) {
+            tooltip.setAttribute("fill", `${this.color}`);
+        }
+        
         tooltip.setAttribute("class", "transition tooltip");
         tooltip.appendChild(path);
         tooltip.appendChild(text);
@@ -126,10 +149,12 @@ export class Tooltip extends Shape implements Moveable{
         return hours+':'+minutes+':'+seconds;
     }
     show(){
-        this._el.classList.add("show");
+        this.addClass('show');
+        
     }
     hide(){
-        this._el.classList.remove("show");
+        this.removeClass('show');
+        
     }
     moveTo(percent:number, time:number) {
         this._el.setAttribute("transform", `translate(${percent} 0)`);
@@ -137,6 +162,33 @@ export class Tooltip extends Shape implements Moveable{
         this._el.style.webkitTransform = `translate3d(${percent}px,0,0)`;
         this.components.text.textContent = this.toTimeText(time);
     }
+
+    setColor(color:string) {
+        this._el.setAttribute('fill', color);
+    }
+    
+    
+    /**
+     * 
+     * jQuery Implementation of hasClass
+     * @param {string} selector
+     * @returns {boolean}
+     * 
+     * @memberOf Tooltip
+     */
+    hasClass(selector:string):boolean {
+        var className = " " + selector + " ",
+			i = 0,
+			l = this._el.length;
+		for ( ; i < l; i++ ) {
+			if ( this._el[ i ].nodeType === 1 && ( " " + this._el[ i ].className + " " ).replace( /[\t\r\n]/g, " " ).indexOf( className ) >= 0 ) {
+				return true;
+			}
+		}
+
+		return false;
+    }
+
     update() {
 
     }

@@ -12,6 +12,7 @@ export interface ChartData {
     width:number;
     type:string;
     x?:number;
+    ex?:number; // End X Pos
 }
 
 
@@ -31,6 +32,8 @@ export interface ComponentTree {
 export const Colors  = {
     positive:"#1abc9c",
     negative:"#e74c3c",
-    neutral:"rgba(0,0,0,0)"
+    neutral:"rgba(0,0,0,0)",
+    default:"#DDDDDD"
 }
 
+export const TrimSpacesRegEx:RegExp = /(  +)|(?:\r\n|\r|\n|\r\s)/g ;

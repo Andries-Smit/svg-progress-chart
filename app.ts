@@ -1,8 +1,8 @@
-import { SVGChart } from './svgChart';
+import { SVGProgressChart } from './svgProgress';
 
 module app {
-    "use strict";
-    var chart = new SVGChart("SVGChart", {
+    
+    var chart = new SVGProgressChart("SVGChart", {
         width: 800,
         height: 100,
         time: 450,
@@ -22,6 +22,5 @@ module app {
             width: 5
         }]
     });
-    window['progressBar'] = chart;
-    console.log(`${chart.id} Loaded!`);
+    
 }

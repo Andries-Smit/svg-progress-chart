@@ -4,7 +4,7 @@
   "description": "\"SVG Progress Chart\"",
   "main": "webpack.config.js",
   "scripts": {
-    "start": "tsc app.ts",
+    "start": "tsc app.ts --noImplicitUseStrict --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/oriziv/svg-progress-chart#readme",
   "devDependencies": {
+    "jqlite": "^0.2.39",
+    "node-sass": "^3.10.1",
     "typescript": "^2.0.0"
   }
 }

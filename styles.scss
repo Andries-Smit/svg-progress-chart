@@ -1,0 +1,96 @@
+// Colors
+$positive:#1abc9c;
+$negative:#e74c3c;
+$neutral:rgba(44,66,0,0);
+$bright:white;
+$tooltip-color:#DDDDDD;
+$progress-color:rgb(44, 62, 80);
+$buffer-color:rgba(0,0,0,0.15);
+$bar-color:rgba(0,0,0,.1);
+
+
+// Main
+svg {
+    font-family:"Segoe UI", "Arial";
+    font-size:14px;
+    -webkit-user-select:none;
+}
+
+
+// Components
+// Tooltip
+.tooltip {
+    opacity:0;
+    fill: $tooltip-color;
+    &:hover {
+        fill: darken($tooltip-color, 5%);
+        cursor:pointer;
+        user-select:none;
+    }
+}
+
+// Rect
+rect {
+    cursor:pointer;
+}
+
+// Buffer
+.buffer-progress {
+    transition:transform .1s;
+        -moz-transition: transform .1s;
+        -o-transition: transform .1s;
+        -webkit-transition: transform .1s;
+        opacity:0;
+        &:hover {
+            opacity:1;
+        }
+}
+.bar {
+    fill: $bar-color;
+}
+.buffer {
+    opacity:0;
+    fill:$buffer-color;
+}
+
+.show {
+    opacity:1;
+}
+
+// Progress
+.progress {
+    fill:$progress-color;   
+}
+// Animations
+.transition {
+    transform-origin:left;
+    transition:transform .2s ,opacity .2s;
+    -moz-transition: transform .2s ,opacity .2s;
+    -o-transition: transform .2s ,opacity .2s;
+    -webkit-transition: transform .2s, opacity .2s;
+}
+
+// Color Classes
+.positive {
+    fill: $positive;
+    text {
+        fill: $bright;
+    }
+    &:hover {
+        fill:lighten($color: $positive, $amount: 5%);
+    }
+}
+
+.negative {
+    fill: $negative;
+    text {
+        fill: $bright;
+    }
+    &:hover{
+        fill:lighten($color: $negative, $amount: 5%);
+    }
+}
+
+.neutral{
+    fill:$neutral;
+}
