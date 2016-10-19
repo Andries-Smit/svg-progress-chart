@@ -161,7 +161,7 @@ export class SVGProgressChart {
 
         let timer:number;
         overlay._el.addEventListener('mousemove', function (e: MouseEvent) {
-            let percent = (e.offsetX / instance.options.width * 100);
+            
             let pixels = e.offsetX / instance.options.width * instance.options.width - tooltip.width / 2;
             let time = e.offsetX / instance.options.width * instance.options.time;
             pixels = Math.max(Math.min(pixels, instance.options.width - tooltip.width), 0);
