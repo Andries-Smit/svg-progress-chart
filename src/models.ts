@@ -1,11 +1,6 @@
-import {TrimSpacesRegEx} from './interfaces';
-
-// Models 
+import {TrimSpacesRegEx, Showable} from './interfaces';
 export const SVGSchemaURI =  "http://www.w3.org/2000/svg";
-export interface Showable {
-    show():void;
-    hide():void;
-}
+
 export abstract class Shape {
     width:number;
     height:number;

@@ -1,6 +1,11 @@
 import {Rect, Tooltip} from './models';
 
 // interfaces
+export interface Showable {
+    show():void;
+    hide():void;
+}
+
 export interface ChartOptions {
     width:number;
     height:number;
