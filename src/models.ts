@@ -2,7 +2,7 @@ import {TrimSpacesRegEx} from './interfaces';
 
 // Models 
 export const SVGSchemaURI =  "http://www.w3.org/2000/svg";
-export interface Moveable {
+export interface Showable {
     show():void;
     hide():void;
 }
@@ -47,7 +47,7 @@ export abstract class Shape {
     }
 }
 
-export class Rect extends Shape implements Moveable{
+export class Rect extends Shape implements Showable{
     value:number;
     type?:string;
     constructor (h:number, w:number, x:number, y:number, color?:string) {
@@ -95,7 +95,7 @@ export class Rect extends Shape implements Moveable{
     }
 }
 
-export class Tooltip extends Shape implements Moveable{
+export class Tooltip extends Shape implements Showable{
     text:string;
     components:{
         text:SVGTextElement
