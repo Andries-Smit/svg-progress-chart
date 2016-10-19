@@ -1,7 +1,7 @@
 // Webpack Config Object
 module.exports = {
     context: __dirname,
-    entry: "./app",
+    entry: "./src/app",
     output: {
         path: __dirname + "/dist",
         filename: "bundle.js"
