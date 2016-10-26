@@ -2,7 +2,7 @@
 
 A Pure SVG Progressbar chart written in Typescript
 
-Ori Ziv, Microsoft 2016
+@TODO - Browsers tests
 
 ## License
 MIT
