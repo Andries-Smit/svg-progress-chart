@@ -1,3 +1,3 @@
 "SVG Progress Chart"
 
-![alt tag](http://imgur.com/download/NvMoGRR)
+![alt tag](http://imgur.com/download/QLlInUh)
