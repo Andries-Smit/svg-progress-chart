@@ -7,4 +7,7 @@ Ori Ziv, Microsoft 2016
 ## License
 MIT
 
+## Contribute
+Feel free to make it better!
+
 ![alt tag](http://imgur.com/download/QLlInUh)
