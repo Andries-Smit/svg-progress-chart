@@ -11,6 +11,10 @@ export interface ChartOptions {
     height:number;
     data:ChartData[];
     time:number;
+    barHeight:number;
+    tooltipHeight:number;
+    top:number;
+
 }
 
 export interface ChartData {
@@ -38,7 +42,7 @@ export const Colors  = {
     positive:"#1abc9c",
     negative:"#e74c3c",
     neutral:"rgba(0,0,0,0)",
-    default:"#DDDDDD"
+    default:"#2C3E50"
 }
 
 export const TrimSpacesRegEx:RegExp = /(  +)|(?:\r\n|\r|\n|\r\s)/g ;

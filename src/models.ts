@@ -15,7 +15,9 @@ export abstract class Shape {
         this.width = w;
         this.x = x;
         this.y = y;
-        this.color = color || undefined;
+        if(color){
+            this.color = color ;
+        }
         this.classList = [];
     }
 
@@ -37,6 +39,27 @@ export abstract class Shape {
         }
     }
 
+    /**
+     * 
+     * jQuery Implementation of hasClass
+     * @param {string} selector
+     * @returns {boolean}
+     * 
+     * @memberOf Tooltip
+     */
+    hasClass(selector:string):boolean {
+        var className = " " + selector + " ",
+			i = 0,
+			l = this._el.length;
+		for ( ; i < l; i++ ) {
+			if ( this._el[ i ].nodeType === 1 && ( " " + this._el[ i ].className + " " ).replace( /[\t\r\n]/g, " " ).indexOf( className ) >= 0 ) {
+				return true;
+			}
+		}
+
+		return false;
+    }
+    
     private classReg( className ) {
         return new RegExp("(^|\\s+)" + className + "(\\s+|$)");
     }
@@ -57,14 +80,16 @@ export class Rect extends Shape implements Showable{
 
     update () {
         let element = <SVGRectElement> this._el;
+        if(!element){
+            return;
+        }
         element.setAttribute("width", this.width.toString() + "%");
         element.setAttribute("height", this.height.toString());
         element.setAttribute("x", this.x.toString() + "%");
         element.setAttribute("y", this.y.toString());
         element.setAttribute("class","transition");
-        let style = `fill:${this.color};`;
         if(this.color){
-            element.setAttribute("style", style);
+            element.setAttribute("style", `fill:${this.color}`);
         }
         
         this.classList.forEach( (cls) =>{
@@ -74,7 +99,20 @@ export class Rect extends Shape implements Showable{
         });
     }
 
+    remove() {
+        if(!this._el){
+            return;
+        }
+        if(this._el.remove){
+            this._el.remove();
+        } else {
+            this._el.parentNode.removeChild(this._el);
+        }
+
+        delete this._el;
+    }
     moveTo(percent:number){
+        percent = Math.min(percent, 100);
         this._el.setAttribute("transform", `scale(${percent},1)`);
         this._el.style.transform = `scale3d(${percent},1,1)`;
         this._el.style.webkitTransform = `scale3d(${percent},1,1)`;
@@ -117,7 +155,7 @@ export class Tooltip extends Shape implements Showable{
                                 L${this.x} ${this.height + this.y}`.replace(TrimSpacesRegEx, ' '));
         let text:SVGTextElement = <SVGTextElement> document.createElementNS(SVGSchemaURI, "text");
         text.textContent = this.text;
-        text.setAttribute("x", `${this.x + this.width/2 - 30}`);
+        text.setAttribute("x", `${this.x + this.width/2 - 23}`);
         text.setAttribute("y", `${this.y + this.height/2 + 5 }`);
         text.setAttribute("fill","rgba(0,0,0,.6)");
         this.components.text = text;
@@ -144,9 +182,11 @@ export class Tooltip extends Shape implements Showable{
         return hours+':'+minutes+':'+seconds;
     }
     show(){
-        this.addClass('show');
-        
+        if(!this.hasClass('show')) {
+            this.addClass('show');
+        }
     }
+    
     hide(){
         this.removeClass('show');
         
@@ -163,26 +203,7 @@ export class Tooltip extends Shape implements Showable{
     }
     
     
-    /**
-     * 
-     * jQuery Implementation of hasClass
-     * @param {string} selector
-     * @returns {boolean}
-     * 
-     * @memberOf Tooltip
-     */
-    hasClass(selector:string):boolean {
-        var className = " " + selector + " ",
-			i = 0,
-			l = this._el.length;
-		for ( ; i < l; i++ ) {
-			if ( this._el[ i ].nodeType === 1 && ( " " + this._el[ i ].className + " " ).replace( /[\t\r\n]/g, " " ).indexOf( className ) >= 0 ) {
-				return true;
-			}
-		}
 
-		return false;
-    }
 
     update() {
 
