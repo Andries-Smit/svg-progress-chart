@@ -7,19 +7,24 @@ $tooltip-color:#DDDDDD;
 $progress-color:rgb(44, 62, 80);
 $buffer-color:rgba(0,0,0,0.15);
 $bar-color:rgba(0,0,0,.1);
-
+$selected-color: $positive;
 
 // Main
 svg {
     font-family:"Segoe UI", "Arial";
     font-size:14px;
     -webkit-user-select:none;
+    opacity: 0;
+     transition:opacity .4s;
+    -moz-transition: opacity .4s;
+    -o-transition: opacity .4s;
+    -webkit-transition: opacity .4s;
 }
-
+ 
 
 // Components
 // Tooltip
-.tooltip {
+.tooltip { 
     opacity:0;
     fill: $tooltip-color;
     &:hover {
@@ -27,16 +32,27 @@ svg {
         cursor:pointer;
         user-select:none;
     }
+
+    text {
+        font-size: 0.9em;
+    }
+
+    &.default {
+        fill: $tooltip-color;
+    }
 }
 
 // Rect
 rect {
     cursor:pointer;
+    &.selected {
+        fill: $selected-color;
+    }
 }
 
 // Buffer
 .buffer-progress {
-    transition:transform .1s;
+         transition:transform .1s;
         -moz-transition: transform .1s;
         -o-transition: transform .1s;
         -webkit-transition: transform .1s;
@@ -64,10 +80,10 @@ rect {
 // Animations
 .transition {
     transform-origin:left;
-    transition:transform .2s ,opacity .2s;
-    -moz-transition: transform .2s ,opacity .2s;
-    -o-transition: transform .2s ,opacity .2s;
-    -webkit-transition: transform .2s, opacity .2s;
+    transition:transform .2s ,opacity .2s, x .2s, width .2s;
+    -moz-transition: transform .2s ,opacity .2s, x .2s, width .2s;
+    -o-transition: transform .2s ,opacity .2s, x .2s, width .2s;
+    -webkit-transition: transform .2s, opacity .2s, x .2s, width .2s;
 }
 
 // Color Classes
@@ -93,4 +109,8 @@ rect {
 
 .neutral{
     fill:$neutral;
+}
+
+.default {
+    fill: $progress-color;
 }

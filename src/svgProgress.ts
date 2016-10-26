@@ -6,6 +6,8 @@ import { ChartData,
 import { Rect, Tooltip } from './models';
 // import {Utils} from './utils';
 // @TODO import function from Utils
+
+// Define requestAnimationFrame with fallback
 let requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
         window['webkitRequestAnimationFrame'] ||
@@ -15,6 +17,7 @@ let requestAnimFrame = (function () {
         };
 })();
 
+// Define the main class for the progress chart.
 export class SVGProgressChart {
     id: string;
     rootElement: HTMLElement;

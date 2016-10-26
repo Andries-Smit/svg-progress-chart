@@ -24,6 +24,7 @@ export abstract class Shape {
     abstract createElement<T>():T;
     abstract update():void;
 
+    // Add class to svg element
     addClass(cls:string) {
         if ( 'classList' in this._el ) {
             this._el.classList.add(cls);
@@ -31,6 +32,8 @@ export abstract class Shape {
             this._el.className.baseVal = this._el.className.baseVal + ' ' + cls;
         }
     }
+
+    // jQuery Implementation of removeClass
     removeClass(cls:string){
         if ( 'classList' in this._el ) {
             this._el.classList.remove(cls);
@@ -39,14 +42,7 @@ export abstract class Shape {
         }
     }
 
-    /**
-     * 
-     * jQuery Implementation of hasClass
-     * @param {string} selector
-     * @returns {boolean}
-     * 
-     * @memberOf Tooltip
-     */
+    // jQuery Implementation of hasClass
     hasClass(selector:string):boolean {
         var className = " " + selector + " ",
 			i = 0,
@@ -59,7 +55,7 @@ export abstract class Shape {
 
 		return false;
     }
-    
+
     private classReg( className ) {
         return new RegExp("(^|\\s+)" + className + "(\\s+|$)");
     }
@@ -209,8 +205,3 @@ export class Tooltip extends Shape implements Showable{
 
     }
 }
-
-// <g fill="red">
-//   <path fill="green" d="M0 0 L100 0 L100 50 L60 50 L50 60 L40 50 L0 50" />
-// <text x="20" y="30" fill="#000000">00:11:44</text>
-// </g>

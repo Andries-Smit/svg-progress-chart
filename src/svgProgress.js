@@ -3,6 +3,7 @@ var interfaces_1 = require("./interfaces");
 var models_1 = require("./models");
 // import {Utils} from './utils';
 // @TODO import function from Utils
+// Define requestAnimationFrame with fallback
 var requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
         window['webkitRequestAnimationFrame'] ||
@@ -11,6 +12,7 @@ var requestAnimFrame = (function () {
             window.setTimeout(callback, 1000 / 60);
         };
 })();
+// Define the main class for the progress chart.
 var SVGProgressChart = (function () {
     function SVGProgressChart(id, options) {
         this.options = {
@@ -230,4 +232,5 @@ var SVGProgressChart = (function () {
     return SVGProgressChart;
 }());
 exports.SVGProgressChart = SVGProgressChart;
+// Expose instance globally
 window['SVGProgressChart'] = SVGProgressChart || {};

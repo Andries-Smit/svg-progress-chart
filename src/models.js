@@ -17,6 +17,7 @@ var Shape = (function () {
         }
         this.classList = [];
     }
+    // Add class to svg element
     Shape.prototype.addClass = function (cls) {
         if ('classList' in this._el) {
             this._el.classList.add(cls);
@@ -25,6 +26,7 @@ var Shape = (function () {
             this._el.className.baseVal = this._el.className.baseVal + ' ' + cls;
         }
     };
+    // jQuery Implementation of removeClass
     Shape.prototype.removeClass = function (cls) {
         if ('classList' in this._el) {
             this._el.classList.remove(cls);
@@ -33,14 +35,7 @@ var Shape = (function () {
             this._el.className.baseVal = this._el.className.baseVal.replace(this.classReg(cls), ' ');
         }
     };
-    /**
-     *
-     * jQuery Implementation of hasClass
-     * @param {string} selector
-     * @returns {boolean}
-     *
-     * @memberOf Tooltip
-     */
+    // jQuery Implementation of hasClass
     Shape.prototype.hasClass = function (selector) {
         var className = " " + selector + " ", i = 0, l = this._el.length;
         for (; i < l; i++) {
@@ -183,7 +178,3 @@ var Tooltip = (function (_super) {
     return Tooltip;
 }(Shape));
 exports.Tooltip = Tooltip;
-// <g fill="red">
-//   <path fill="green" d="M0 0 L100 0 L100 50 L60 50 L50 60 L40 50 L0 50" />
-// <text x="20" y="30" fill="#000000">00:11:44</text>
-// </g> 
