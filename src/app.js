@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var svgProgress_1 = require("./svgProgress");
 var app;
 (function (app) {

@@ -22,6 +22,9 @@ export class SVGProgressChart {
     id: string;
     rootElement: HTMLElement;
     components: ComponentTree;
+    timer:number;
+    lastMatch = false;
+    currentTooltipType:string;    
     options: ChartOptions = {
         height: 500,
         width: 500,
@@ -32,12 +35,13 @@ export class SVGProgressChart {
         top:50
     };
 
-    constructor(id, options: ChartOptions) {
-        this.id = id;
-        this.rootElement = document.getElementById(id);
-        if (!id || !this.rootElement) {
+    constructor(element:HTMLElement, options: ChartOptions) {
+        if (!element) {
             throw "Root SVG Element is missing";
-        }
+        }        
+        this.rootElement = element;
+        this.id = this.rootElement.id;
+
         if (options) {
             this.options.height = options.height;
             this.options.width = options.width || this.rootElement.parentElement.clientWidth;
@@ -124,6 +128,12 @@ export class SVGProgressChart {
 
     }
 
+    public clearEvents() {
+        this.components.progressBar.overlay._el.removeEventListener('click', this.handleMouseClick.bind(this));
+        this.components.progressBar.overlay._el.removeEventListener('mouseleave', this.handleMouseLeave.bind(this));
+        this.components.progressBar.overlay._el.removeEventListener('mousemove', this.handleMouseMove.bind(this));
+    }
+
     public setData(data:ChartData[]) {
         
         // If new data obj less than what exists than delete data.
@@ -161,6 +171,64 @@ export class SVGProgressChart {
         });
 
         
+    }
+
+    private handleMouseLeave(e: MouseEvent) {
+        requestAnimFrame(()=>{
+            this.components.progressBar.tooltip.hide();
+            this.components.progressBar.buffer.hide();
+        });
+    }
+
+    private handleMouseMove(e: MouseEvent) {
+        let pixels = e.offsetX / this.options.width * this.options.width - this.components.progressBar.tooltip.width / 2;
+        let time = e.offsetX / this.options.width * this.options.time;
+        pixels = Math.max(Math.min(pixels, this.options.width - this.components.progressBar.tooltip.width), 0);
+        
+        clearTimeout(this.timer);
+
+        this.timer = setTimeout(()=> {
+        this.lastMatch = false;
+        this.components.events.forEach(event => {
+            if(!event._el) {
+                return;
+            }
+
+            // if(event.hasClass('selected')){
+            //     event.removeClass('selected');
+            // }
+
+            if(e.offsetX >= event.x * this.options.width/100 && e.offsetX < (event.x + event.width)/100 * this.options.width && event.type !== 'neutral') {
+                this.lastMatch = true;
+                if(event.type !== this.currentTooltipType){
+                    requestAnimFrame(()=>{
+                        // event.addClass('selected');
+                        this.components.progressBar.tooltip.removeClass(this.currentTooltipType);
+                        this.currentTooltipType = event.type;
+                        this.components.progressBar.tooltip.addClass(event.type);
+                    });
+                } 
+            }
+        });
+
+        if(!this.lastMatch) {
+            this.components.progressBar.tooltip.removeClass(this.currentTooltipType);
+            this.currentTooltipType = 'neutral';
+        }
+
+        }, 10);
+
+
+        requestAnimFrame(()=> {
+            this.setPreBuffer(time);
+        });
+    }
+
+    private handleMouseClick(e: MouseEvent) {
+        let percent = (e.offsetX / this.options.width * 100);
+        requestAnimFrame(()=> {
+            this.components.progressBar.progress.moveTo(percent);
+        });        
     }
 
     private init() {
@@ -205,71 +273,9 @@ export class SVGProgressChart {
         this.rootElement.appendChild(tooltip._el);
 
         // Add event listeners
-        overlay._el.addEventListener('click', function (e: MouseEvent) {
-            let percent = (e.offsetX / instance.options.width * 100);
-            requestAnimFrame(function () {
-                progress.moveTo(percent);
-            });
-        });
-        
-        overlay._el.addEventListener('mouseleave', function (e:MouseEvent) {
-            requestAnimFrame(function(){
-                tooltip.hide();
-                bufferProgress.hide();
-            });
-           
-        });
-
-        let timer:number;
-        let currentTooltipType:string;
-        let lastMatch = false;
-        overlay._el.addEventListener('mousemove', function (e: MouseEvent) {
-            
-            let pixels = e.offsetX / instance.options.width * instance.options.width - tooltip.width / 2;
-            let time = e.offsetX / instance.options.width * instance.options.time;
-            pixels = Math.max(Math.min(pixels, instance.options.width - tooltip.width), 0);
-            
-            clearTimeout(timer);
-
-            timer = setTimeout(function () {
-            lastMatch = false;
-            instance.components.events.forEach(event => {
-                if(!event._el) {
-                    return;
-                }
-
-                // if(event.hasClass('selected')){
-                //     event.removeClass('selected');
-                // }
-
-                if(e.offsetX >= event.x*instance.options.width/100 && e.offsetX < (event.x + event.width)/100*instance.options.width && event.type !== 'neutral') {
-                    lastMatch = true;
-                    
-                    if(event.type !== currentTooltipType){
-                        requestAnimFrame(function(){
-                            // event.addClass('selected');
-                            tooltip.removeClass(currentTooltipType);
-                            currentTooltipType = event.type;
-                            tooltip.addClass(event.type);
-                        });
-                    } 
-                }
-            });
-
-            if(!lastMatch) {
-                tooltip.removeClass(currentTooltipType);
-                currentTooltipType = 'neutral';
-            }
-
-            }, 10);
-
-
-            requestAnimFrame(function(){
-                instance.setPreBuffer(time);
-            });
-
-
-        });
+        overlay._el.addEventListener('click', this.handleMouseClick.bind(this));
+        overlay._el.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
+        overlay._el.addEventListener('mousemove', this.handleMouseMove.bind(this));
 
         this.addClass('show');
     }

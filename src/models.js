@@ -1,9 +1,15 @@
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
 var interfaces_1 = require("./interfaces");
 exports.SVGSchemaURI = "http://www.w3.org/2000/svg";
 var Shape = (function () {
@@ -17,7 +23,6 @@ var Shape = (function () {
         }
         this.classList = [];
     }
-    // Add class to svg element
     Shape.prototype.addClass = function (cls) {
         if ('classList' in this._el) {
             this._el.classList.add(cls);
@@ -26,7 +31,6 @@ var Shape = (function () {
             this._el.className.baseVal = this._el.className.baseVal + ' ' + cls;
         }
     };
-    // jQuery Implementation of removeClass
     Shape.prototype.removeClass = function (cls) {
         if ('classList' in this._el) {
             this._el.classList.remove(cls);
@@ -35,7 +39,6 @@ var Shape = (function () {
             this._el.className.baseVal = this._el.className.baseVal.replace(this.classReg(cls), ' ');
         }
     };
-    // jQuery Implementation of hasClass
     Shape.prototype.hasClass = function (selector) {
         var className = " " + selector + " ", i = 0, l = this._el.length;
         for (; i < l; i++) {
@@ -140,7 +143,7 @@ var Tooltip = (function (_super) {
         return tooltip;
     };
     Tooltip.prototype.toTimeText = function (time) {
-        var sec_num = time; // don't forget the second param
+        var sec_num = time;
         var hours = Math.floor(sec_num / 3600);
         var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
         var seconds = sec_num - (hours * 3600) - (minutes * 60);

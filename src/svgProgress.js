@@ -1,9 +1,7 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var interfaces_1 = require("./interfaces");
 var models_1 = require("./models");
-// import {Utils} from './utils';
-// @TODO import function from Utils
-// Define requestAnimationFrame with fallback
 var requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
         window['webkitRequestAnimationFrame'] ||
@@ -12,9 +10,9 @@ var requestAnimFrame = (function () {
             window.setTimeout(callback, 1000 / 60);
         };
 })();
-// Define the main class for the progress chart.
 var SVGProgressChart = (function () {
-    function SVGProgressChart(id, options) {
+    function SVGProgressChart(element, options) {
+        this.lastMatch = false;
         this.options = {
             height: 500,
             width: 500,
@@ -24,11 +22,11 @@ var SVGProgressChart = (function () {
             barHeight: 5,
             top: 50
         };
-        this.id = id;
-        this.rootElement = document.getElementById(id);
-        if (!id || !this.rootElement) {
+        if (!element) {
             throw "Root SVG Element is missing";
         }
+        this.rootElement = element;
+        this.id = this.rootElement.id;
         if (options) {
             this.options.height = options.height;
             this.options.width = options.width || this.rootElement.parentElement.clientWidth;
@@ -105,9 +103,13 @@ var SVGProgressChart = (function () {
         this.setBuffer(time);
         this.components.progressBar.tooltip.moveTo(pixels, time);
     };
+    SVGProgressChart.prototype.clearEvents = function () {
+        this.components.progressBar.overlay._el.removeEventListener('click', this.handleMouseClick.bind(this));
+        this.components.progressBar.overlay._el.removeEventListener('mouseleave', this.handleMouseLeave.bind(this));
+        this.components.progressBar.overlay._el.removeEventListener('mousemove', this.handleMouseMove.bind(this));
+    };
     SVGProgressChart.prototype.setData = function (data) {
         var _this = this;
-        // If new data obj less than what exists than delete data.
         if (data.length < this.components.events.length) {
             this.components.events.forEach(function (e, i) {
                 if (i >= data.length) {
@@ -119,7 +121,6 @@ var SVGProgressChart = (function () {
             if (!event.x) {
                 event.x = i ? _this.options.data[i - 1].x + _this.options.data[i - 1].width : 0;
             }
-            // If event created - just modify the props.
             if (_this.components.events && _this.components.events[i] && _this.components.events[i]._el) {
                 _this.components.events[i].x = event.x;
                 _this.components.events[i].width = event.width;
@@ -133,7 +134,6 @@ var SVGProgressChart = (function () {
                 newEvent.addClass(event.type || 'default');
                 _this.components.events.push(newEvent);
                 if (_this.components.progressBar.overlay) {
-                    // prepend
                     _this.components.progressBar.overlay._el.parentNode.insertBefore(newEvent._el, _this.components.progressBar.overlay._el);
                 }
                 else {
@@ -142,19 +142,61 @@ var SVGProgressChart = (function () {
             }
         });
     };
+    SVGProgressChart.prototype.handleMouseLeave = function (e) {
+        var _this = this;
+        requestAnimFrame(function () {
+            _this.components.progressBar.tooltip.hide();
+            _this.components.progressBar.buffer.hide();
+        });
+    };
+    SVGProgressChart.prototype.handleMouseMove = function (e) {
+        var _this = this;
+        var pixels = e.offsetX / this.options.width * this.options.width - this.components.progressBar.tooltip.width / 2;
+        var time = e.offsetX / this.options.width * this.options.time;
+        pixels = Math.max(Math.min(pixels, this.options.width - this.components.progressBar.tooltip.width), 0);
+        clearTimeout(this.timer);
+        this.timer = setTimeout(function () {
+            _this.lastMatch = false;
+            _this.components.events.forEach(function (event) {
+                if (!event._el) {
+                    return;
+                }
+                if (e.offsetX >= event.x * _this.options.width / 100 && e.offsetX < (event.x + event.width) / 100 * _this.options.width && event.type !== 'neutral') {
+                    _this.lastMatch = true;
+                    if (event.type !== _this.currentTooltipType) {
+                        requestAnimFrame(function () {
+                            _this.components.progressBar.tooltip.removeClass(_this.currentTooltipType);
+                            _this.currentTooltipType = event.type;
+                            _this.components.progressBar.tooltip.addClass(event.type);
+                        });
+                    }
+                }
+            });
+            if (!_this.lastMatch) {
+                _this.components.progressBar.tooltip.removeClass(_this.currentTooltipType);
+                _this.currentTooltipType = 'neutral';
+            }
+        }, 10);
+        requestAnimFrame(function () {
+            _this.setPreBuffer(time);
+        });
+    };
+    SVGProgressChart.prototype.handleMouseClick = function (e) {
+        var _this = this;
+        var percent = (e.offsetX / this.options.width * 100);
+        requestAnimFrame(function () {
+            _this.components.progressBar.progress.moveTo(percent);
+        });
+    };
     SVGProgressChart.prototype.init = function () {
         var instance = this;
-        // Create progress bar
-        // 1. Create the bar element
         var bar = new models_1.Rect(this.options.barHeight, 100, 0, this.options.top);
         bar.addClass('bar');
         this.rootElement.appendChild(bar._el);
         this.components.progressBar.bar = bar;
-        // 2. Create the progress element
         var progress = new models_1.Rect(this.options.barHeight, 1, 0, this.options.top);
         progress.addClass('progress');
         progress.moveTo(0);
-        // 3. Create the dragging overlay progress
         var bufferProgress = new models_1.Rect(this.options.barHeight, 1, 0, this.options.top);
         this.rootElement.appendChild(bufferProgress._el);
         this.components.progressBar.buffer = bufferProgress;
@@ -163,74 +205,22 @@ var SVGProgressChart = (function () {
         this.rootElement.appendChild(progress._el);
         this.components.progressBar.progress = progress;
         console.log(this);
-        // 4. Create timeline rects from data if exists
         if (this.options.data) {
             this.setData(this.options.data);
         }
-        // 5. Create overlay on top of everything for catching events        
         var overlay = new models_1.Rect(this.options.barHeight * 3, 100, 0, 20 + this.options.tooltipHeight - this.options.barHeight, "rgba(255,255,255,0)");
         overlay.addClass("overlay");
         this.components.progressBar.overlay = overlay;
         this.rootElement.appendChild(overlay._el);
-        // 6. Create the tooltip
         var tooltip = new models_1.Tooltip(this.options.tooltipHeight, this.options.tooltipHeight * 2.2, 0, 0, "00:00:00");
         this.components.progressBar.tooltip = tooltip;
         this.rootElement.appendChild(tooltip._el);
-        // Add event listeners
-        overlay._el.addEventListener('click', function (e) {
-            var percent = (e.offsetX / instance.options.width * 100);
-            requestAnimFrame(function () {
-                progress.moveTo(percent);
-            });
-        });
-        overlay._el.addEventListener('mouseleave', function (e) {
-            requestAnimFrame(function () {
-                tooltip.hide();
-                bufferProgress.hide();
-            });
-        });
-        var timer;
-        var currentTooltipType;
-        var lastMatch = false;
-        overlay._el.addEventListener('mousemove', function (e) {
-            var pixels = e.offsetX / instance.options.width * instance.options.width - tooltip.width / 2;
-            var time = e.offsetX / instance.options.width * instance.options.time;
-            pixels = Math.max(Math.min(pixels, instance.options.width - tooltip.width), 0);
-            clearTimeout(timer);
-            timer = setTimeout(function () {
-                lastMatch = false;
-                instance.components.events.forEach(function (event) {
-                    if (!event._el) {
-                        return;
-                    }
-                    // if(event.hasClass('selected')){
-                    //     event.removeClass('selected');
-                    // }
-                    if (e.offsetX >= event.x * instance.options.width / 100 && e.offsetX < (event.x + event.width) / 100 * instance.options.width && event.type !== 'neutral') {
-                        lastMatch = true;
-                        if (event.type !== currentTooltipType) {
-                            requestAnimFrame(function () {
-                                // event.addClass('selected');
-                                tooltip.removeClass(currentTooltipType);
-                                currentTooltipType = event.type;
-                                tooltip.addClass(event.type);
-                            });
-                        }
-                    }
-                });
-                if (!lastMatch) {
-                    tooltip.removeClass(currentTooltipType);
-                    currentTooltipType = 'neutral';
-                }
-            }, 10);
-            requestAnimFrame(function () {
-                instance.setPreBuffer(time);
-            });
-        });
+        overlay._el.addEventListener('click', this.handleMouseClick.bind(this));
+        overlay._el.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
+        overlay._el.addEventListener('mousemove', this.handleMouseMove.bind(this));
         this.addClass('show');
     };
     return SVGProgressChart;
 }());
 exports.SVGProgressChart = SVGProgressChart;
-// Expose instance globally
 window['SVGProgressChart'] = SVGProgressChart || {};
